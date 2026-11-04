@@ -59,7 +59,15 @@ input[type=text]:focus,button:focus-visible,.opt:focus-within{outline:2px solid 
 .ro.wrong{background:var(--badbg);border-color:var(--bad)}
 .tag{font-size:12px;font-weight:600;margin-left:6px}
 .ro.right .tag{color:var(--ok)}.ro.wrong .tag{color:var(--bad)}
-.skip{color:var(--mute);font-size:13px;margin-top:8px}
+.skip{color:var(--bad);font-size:14px;font-weight:600;margin-top:8px}
+.rq.unans{border-color:var(--bad);background:var(--badbg)}
+.rq.unans h3{color:var(--bad)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.stat{border:1px solid var(--line);background:var(--panel);padding:12px}
+.stat b{display:block;font-size:28px;font-weight:800;line-height:1.1}
+.stat span{font-size:13px;color:var(--mute)}
+.stat.g b{color:var(--ok)}.stat.r b{color:var(--bad)}
+@media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr)}}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 26px}
 </style>
 </head>
@@ -96,6 +104,7 @@ input[type=text]:focus,button:focus-visible,.opt:focus-within{outline:2px solid 
     <div class="who" id="resWho"></div>
     <div class="score" id="score"></div>
     <div id="resMeta" class="who"></div>
+    <div class="stats" id="stats"></div>
     <div class="status" id="saveStatus"></div>
     <div class="actions">
       <button class="btn accent" id="pdfBtn">Download PDF</button>
@@ -187,9 +196,13 @@ function showResult(auto){
   $('resWho').textContent=payload.candidate_name+(auto?' (time up, submitted automatically)':'');
   const sc=$('score');sc.textContent='';sc.append(payload.score,' ');const sm=el('small','','/ '+payload.total_questions);sc.appendChild(sm);
   const t=payload.time_taken_seconds;$('resMeta').textContent='Time taken: '+Math.floor(t/60)+' min '+(t%60)+' sec';
+  const att=payload.answers.filter(d=>d.selected).length, cor=payload.score, wrong=att-cor, na=payload.total_questions-att;
+  const sg=$('stats');sg.innerHTML='';
+  [['Attempted',att,''],['Correct',cor,'g'],['Wrong',wrong,'r'],['Not attempted',na,'r']].forEach(([l,v,c])=>{
+    const d=el('div','stat '+c);d.appendChild(el('b','',v));d.appendChild(el('span','',l));sg.appendChild(d);});
   const rv=$('review');rv.innerHTML='';
   payload.answers.forEach(d=>{
-    const box=el('div','rq');
+    const box=el('div','rq'+(d.selected?'':' unans'));
     box.appendChild(el('div','meta','Question '+d.no+' (bank no. '+d.original_no+')'));
     box.appendChild(el('h3','',d.question));
     Object.keys(d.options).forEach(k=>{
@@ -198,7 +211,7 @@ function showResult(auto){
       else if(k===d.selected){c+=' wrong';tag='Your answer, wrong';}
       const r=el('div',c,k+') '+d.options[k]);if(tag)r.appendChild(el('span','tag',tag));box.appendChild(r);
     });
-    if(!d.selected)box.appendChild(el('div','skip','Not answered. Correct answer: '+d.correct));
+    if(!d.selected)box.appendChild(el('div','skip','Not attempted. Correct answer: '+d.correct));
     rv.appendChild(box);
   });
   show('result');
@@ -216,7 +229,7 @@ async function save(){
     if(!r.ok)throw new Error(r.status+' '+(await r.text()));
     st.className='status ok';st.textContent='Your result has been saved.';
   }catch(e){
-    st.className='status fail';st.textContent='Could not save result: '+e.message;$('retrySave').classList.remove('hidden');
+    st.className='status fail';st.textContent='Could not save result: '+e.message+'  [file v2, key '+SUPABASE_KEY.slice(0,18)+'...'+SUPABASE_KEY.slice(-4)+', project '+SUPABASE_URL.replace('https://','').split('.')[0]+']';$('retrySave').classList.remove('hidden');
   }
 }
 $('retrySave').onclick=save;
@@ -232,7 +245,9 @@ $('pdfBtn').onclick=()=>{
   doc.setTextColor(0);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('Cessna 172R Test Result',M,y);y+=7;
   doc.setFont('helvetica','normal');doc.setFontSize(10);
   doc.text(pdfTxt('Name: '+payload.candidate_name),M,y);y+=5;
+  const att=payload.answers.filter(d=>d.selected).length;
   doc.text('Score: '+payload.score+' / '+payload.total_questions,M,y);y+=5;
+  doc.text('Attempted: '+att+'   Correct: '+payload.score+'   Wrong: '+(att-payload.score)+'   Not attempted: '+(payload.total_questions-att),M,y);y+=5;
   doc.text('Submitted: '+new Date(payload.submitted_at).toLocaleString(),M,y);y+=5;
   doc.text('Time taken: '+Math.floor(payload.time_taken_seconds/60)+' min '+(payload.time_taken_seconds%60)+' sec',M,y);y+=9;
   payload.answers.forEach(d=>{
@@ -243,7 +258,7 @@ $('pdfBtn').onclick=()=>{
     });
     let h=ql.length*5+2+ols.reduce((a,o)=>a+o.lines.length*4.6,0)+(d.selected?0:5)+5;
     if(y+h>285){doc.addPage();y=16;}
-    doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.setTextColor(0);doc.text(ql,M,y);y+=ql.length*5+2;
+    doc.setFont('helvetica','bold');doc.setFontSize(10.5);if(d.selected)doc.setTextColor(0);else doc.setTextColor(200,40,40);doc.text(ql,M,y);y+=ql.length*5+2;
     doc.setFont('helvetica','normal');doc.setFontSize(10);
     ols.forEach(o=>{
       if(o.k===d.correct){doc.setTextColor(20,140,70);doc.setFont('helvetica','bold');}
@@ -251,7 +266,7 @@ $('pdfBtn').onclick=()=>{
       else{doc.setTextColor(40);doc.setFont('helvetica','normal');}
       doc.text(o.lines,M+6,y);y+=o.lines.length*4.6;
     });
-    if(!d.selected){doc.setTextColor(110);doc.setFont('helvetica','italic');doc.text('Not answered. Correct answer: '+d.correct,M+6,y+1);y+=5;}
+    if(!d.selected){doc.setTextColor(200,40,40);doc.setFont('helvetica','bold');doc.text('NOT ATTEMPTED. Correct answer: '+d.correct,M+6,y+1);y+=5;}
     y+=5;
   });
   doc.save('AboveFL360_Cessna172R_'+payload.candidate_name.replace(/[^A-Za-z0-9]+/g,'_')+'.pdf');
