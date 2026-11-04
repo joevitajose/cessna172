@@ -1,1745 +1,261 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Cessna 172R Test | AboveFL360</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-      :root {
-        --bg: #f6f1e7;
-        --panel: #fffdf8;
-        --line: #d8d0be;
-        --text: #1b1d21;
-        --mute: #666a72;
-        --accent: #ee4f25;
-        --ok: #178a4a;
-        --bad: #d03636;
-        --okbg: rgba(23, 138, 74, 0.12);
-        --badbg: rgba(208, 54, 54, 0.1);
-      }
-      * {
-        box-sizing: border-box;
-      }
-      html,
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family:
-          "Archivo",
-          system-ui,
-          -apple-system,
-          Segoe UI,
-          Roboto,
-          sans-serif;
-        line-height: 1.5;
-      }
-      .wrap {
-        max-width: 860px;
-        margin: 0 auto;
-        padding: 20px 16px 80px;
-      }
-      header.top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 14px 0 18px;
-        border-bottom: 1px solid var(--line);
-        margin-bottom: 22px;
-      }
-      header.top img {
-        height: 34px;
-        display: block;
-      }
-      .hidden {
-        display: none !important;
-      }
-      h1 {
-        font-size: clamp(28px, 6vw, 46px);
-        line-height: 1.05;
-        margin: 8px 0 12px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-      }
-      h1 span {
-        color: var(--accent);
-      }
-      p.lead {
-        color: var(--mute);
-        margin: 0 0 24px;
-        max-width: 56ch;
-      }
-      .card {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        padding: 22px;
-      }
-      label {
-        display: block;
-        font-weight: 600;
-        margin-bottom: 8px;
-      }
-      input[type="text"] {
-        width: 100%;
-        padding: 14px;
-        font: inherit;
-        background: var(--bg);
-        color: var(--text);
-        border: 1px solid var(--line);
-        border-radius: 0;
-      }
-      input[type="text"]:focus,
-      button:focus-visible,
-      .opt:focus-within {
-        outline: 2px solid var(--accent);
-        outline-offset: 2px;
-      }
-      .btn {
-        font: inherit;
-        font-weight: 600;
-        padding: 13px 22px;
-        border: 1px solid var(--text);
-        background: var(--text);
-        color: #fff;
-        cursor: pointer;
-        border-radius: 0;
-      }
-      .btn.ghost {
-        background: transparent;
-        color: var(--text);
-        border-color: var(--line);
-      }
-      .btn.accent {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: #fff;
-      }
-      .btn:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-      }
-      .facts {
-        display: flex;
-        gap: 28px;
-        flex-wrap: wrap;
-        margin: 0 0 22px;
-        color: var(--mute);
-      }
-      .facts b {
-        display: block;
-        color: var(--text);
-        font-size: 26px;
-        font-weight: 800;
-      }
-      .err {
-        color: var(--bad);
-        margin: 10px 0 0;
-        min-height: 1.4em;
-      }
-      /* test */
-      .bar {
-        position: sticky;
-        top: 0;
-        z-index: 5;
-        background: var(--bg);
-        padding: 10px 0;
-        border-bottom: 1px solid var(--line);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      .timer {
-        font-size: 28px;
-        font-weight: 800;
-        font-variant-numeric: tabular-nums;
-      }
-      .timer.low {
-        color: var(--bad);
-      }
-      .who {
-        color: var(--mute);
-        font-size: 14px;
-      }
-      .qhead {
-        color: var(--mute);
-        margin: 22px 0 6px;
-        font-size: 14px;
-      }
-      .qtext {
-        font-size: clamp(19px, 3.5vw, 24px);
-        font-weight: 600;
-        margin: 0 0 18px;
-        line-height: 1.35;
-      }
-      .opt {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-        padding: 13px 14px;
-        border: 1px solid var(--line);
-        background: var(--panel);
-        margin-bottom: 10px;
-        cursor: pointer;
-      }
-      .opt input {
-        margin-top: 5px;
-        accent-color: var(--accent);
-      }
-      .opt.sel {
-        border-color: var(--accent);
-        background: rgba(238, 79, 37, 0.1);
-      }
-      .nav {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        margin-top: 20px;
-        flex-wrap: wrap;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(10, 1fr);
-        gap: 6px;
-        margin-top: 26px;
-      }
-      .grid button {
-        font: inherit;
-        font-size: 13px;
-        padding: 8px 0;
-        background: var(--panel);
-        color: var(--mute);
-        border: 1px solid var(--line);
-        cursor: pointer;
-        border-radius: 0;
-      }
-      .grid button.done {
-        background: #e6dfcd;
-        color: var(--text);
-        border-color: #b9b09b;
-      }
-      .grid button.cur {
-        border-color: var(--accent);
-        color: var(--text);
-        background: rgba(238, 79, 37, 0.22);
-      }
-      @media (max-width: 520px) {
-        .grid {
-          grid-template-columns: repeat(5, 1fr);
-        }
-      }
-      /* result */
-      .score {
-        font-size: clamp(44px, 12vw, 84px);
-        font-weight: 800;
-        line-height: 1;
-        margin: 6px 0;
-      }
-      .score small {
-        font-size: 0.4em;
-        color: var(--mute);
-      }
-      .status {
-        padding: 10px 14px;
-        margin: 14px 0;
-        border: 1px solid var(--line);
-        color: var(--mute);
-        font-size: 14px;
-      }
-      .status.ok {
-        border-color: var(--ok);
-        color: var(--ok);
-      }
-      .status.fail {
-        border-color: var(--bad);
-        color: var(--bad);
-      }
-      .rq {
-        border: 1px solid var(--line);
-        background: var(--panel);
-        padding: 16px;
-        margin-bottom: 14px;
-      }
-      .rq h3 {
-        margin: 0 0 10px;
-        font-size: 17px;
-        font-weight: 600;
-      }
-      .rq .meta {
-        color: var(--mute);
-        font-size: 12px;
-        margin-bottom: 6px;
-      }
-      .ro {
-        padding: 8px 10px;
-        border: 1px solid transparent;
-        margin-top: 4px;
-      }
-      .ro.right {
-        background: var(--okbg);
-        border-color: var(--ok);
-      }
-      .ro.wrong {
-        background: var(--badbg);
-        border-color: var(--bad);
-      }
-      .tag {
-        font-size: 12px;
-        font-weight: 600;
-        margin-left: 6px;
-      }
-      .ro.right .tag {
-        color: var(--ok);
-      }
-      .ro.wrong .tag {
-        color: var(--bad);
-      }
-      .skip {
-        color: var(--mute);
-        font-size: 13px;
-        margin-top: 8px;
-      }
-      .actions {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin: 16px 0 26px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <header class="top">
-        <img
-          src="data:image/png;base64,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"
-          alt="AboveFL360"
-        /><span class="who" id="topWho"></span>
-      </header>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cessna 172R Test | AboveFL360</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#f6f1e7;--panel:#fffdf8;--line:#d8d0be;--text:#1b1d21;--mute:#666a72;--accent:#ee4f25;--ok:#178a4a;--bad:#d03636;--okbg:rgba(23,138,74,.12);--badbg:rgba(208,54,54,.1)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:'Archivo',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 80px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0 18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+header.top img{height:34px;display:block}
+.hidden{display:none!important}
+h1{font-size:clamp(28px,6vw,46px);line-height:1.05;margin:8px 0 12px;font-weight:800;letter-spacing:-.02em}
+h1 span{color:var(--accent)}
+p.lead{color:var(--mute);margin:0 0 24px;max-width:56ch}
+.card{background:var(--panel);border:1px solid var(--line);padding:22px}
+label{display:block;font-weight:600;margin-bottom:8px}
+input[type=text]{width:100%;padding:14px;font:inherit;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:0}
+input[type=text]:focus,button:focus-visible,.opt:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.btn{font:inherit;font-weight:600;padding:13px 22px;border:1px solid var(--text);background:var(--text);color:#fff;cursor:pointer;border-radius:0}
+.btn.ghost{background:transparent;color:var(--text);border-color:var(--line)}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.facts{display:flex;gap:28px;flex-wrap:wrap;margin:0 0 22px;color:var(--mute)}
+.facts b{display:block;color:var(--text);font-size:26px;font-weight:800}
+.err{color:var(--bad);margin:10px 0 0;min-height:1.4em}
+/* test */
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.timer{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.timer.low{color:var(--bad)}
+.who{color:var(--mute);font-size:14px}
+.qhead{color:var(--mute);margin:22px 0 6px;font-size:14px}
+.qtext{font-size:clamp(19px,3.5vw,24px);font-weight:600;margin:0 0 18px;line-height:1.35}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;border:1px solid var(--line);background:var(--panel);margin-bottom:10px;cursor:pointer}
+.opt input{margin-top:5px;accent-color:var(--accent)}
+.opt.sel{border-color:var(--accent);background:rgba(238,79,37,.1)}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:26px}
+.grid button{font:inherit;font-size:13px;padding:8px 0;background:var(--panel);color:var(--mute);border:1px solid var(--line);cursor:pointer;border-radius:0}
+.grid button.done{background:#e6dfcd;color:var(--text);border-color:#b9b09b}
+.grid button.cur{border-color:var(--accent);color:var(--text);background:rgba(238,79,37,.22)}
+@media(max-width:520px){.grid{grid-template-columns:repeat(5,1fr)}}
+/* result */
+.score{font-size:clamp(44px,12vw,84px);font-weight:800;line-height:1;margin:6px 0}
+.score small{font-size:.4em;color:var(--mute)}
+.status{padding:10px 14px;margin:14px 0;border:1px solid var(--line);color:var(--mute);font-size:14px}
+.status.ok{border-color:var(--ok);color:var(--ok)}.status.fail{border-color:var(--bad);color:var(--bad)}
+.rq{border:1px solid var(--line);background:var(--panel);padding:16px;margin-bottom:14px}
+.rq h3{margin:0 0 10px;font-size:17px;font-weight:600}
+.rq .meta{color:var(--mute);font-size:12px;margin-bottom:6px}
+.ro{padding:8px 10px;border:1px solid transparent;margin-top:4px}
+.ro.right{background:var(--okbg);border-color:var(--ok)}
+.ro.wrong{background:var(--badbg);border-color:var(--bad)}
+.tag{font-size:12px;font-weight:600;margin-left:6px}
+.ro.right .tag{color:var(--ok)}.ro.wrong .tag{color:var(--bad)}
+.skip{color:var(--mute);font-size:13px;margin-top:8px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 26px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><img src="data:image/png;base64,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" alt="AboveFL360"><span class="who" id="topWho"></span></header>
 
-      <section id="start">
-        <h1>Cessna 172R<br /><span>Ground test</span></h1>
-        <p class="lead">Answer 50 questions in 45 minutes.</p>
-        <div class="facts">
-          <div><b>50</b>questions</div>
-          <div><b>45:00</b>minutes</div>
-        </div>
-        <div class="card">
-          <label for="name">Your full name</label>
-          <input
-            type="text"
-            id="name"
-            maxlength="80"
-            autocomplete="name"
-            placeholder="Enter your name"
-          />
-          <p class="err" id="nameErr"></p>
-          <button class="btn accent" id="startBtn">Start test</button>
-        </div>
-      </section>
-
-      <section id="test" class="hidden">
-        <div class="bar">
-          <span class="who" id="barWho"></span
-          ><span class="timer" id="timer">45:00</span>
-        </div>
-        <div class="qhead" id="qhead"></div>
-        <p class="qtext" id="qtext"></p>
-        <div id="opts"></div>
-        <div class="nav">
-          <button class="btn ghost" id="prev">Previous</button>
-          <button class="btn" id="next">Next</button>
-        </div>
-        <div class="grid" id="grid"></div>
-        <div class="nav">
-          <span id="answered" class="who"></span
-          ><button class="btn accent" id="submitBtn">Submit test</button>
-        </div>
-      </section>
-
-      <section id="result" class="hidden">
-        <div class="who" id="resWho"></div>
-        <div class="score" id="score"></div>
-        <div id="resMeta" class="who"></div>
-        <div class="status" id="saveStatus"></div>
-        <div class="actions">
-          <button class="btn accent" id="pdfBtn">Download PDF</button>
-          <button class="btn ghost hidden" id="retrySave">
-            Retry saving result
-          </button>
-        </div>
-        <div id="review"></div>
-      </section>
+  <section id="start">
+    <h1>Cessna 172R<br><span>Ground test</span></h1>
+    <p class="lead">Answer 50 questions in 45 minutes.</p>
+    <div class="facts"><div><b>50</b>questions</div><div><b>45:00</b>minutes</div></div>
+    <div class="card">
+      <label for="name">Your full name</label>
+      <input type="text" id="name" maxlength="80" autocomplete="name" placeholder="Enter your name">
+      <p class="err" id="nameErr"></p>
+      <button class="btn accent" id="startBtn">Start test</button>
     </div>
+  </section>
 
-    <script>
-      /* ===== CONFIG: fill these two values ===== */
-      const SUPABASE_URL = "https://heffsbxcpefpjcrmdupw.supabase.co"; // e.g. https://abcdxyz.supabase.co
-      const SUPABASE_KEY = "sb_secret_E8c9uEzusUSiFYPMLczKzA_2npbCECJ"; // anon / publishable key
-      const TABLE = "test_results";
-      const TOTAL_Q = 50,
-        DURATION_MS = 45 * 60 * 1000;
-      /* ========================================= */
+  <section id="test" class="hidden">
+    <div class="bar"><span class="who" id="barWho"></span><span class="timer" id="timer">45:00</span></div>
+    <div class="qhead" id="qhead"></div>
+    <p class="qtext" id="qtext"></p>
+    <div id="opts"></div>
+    <div class="nav">
+      <button class="btn ghost" id="prev">Previous</button>
+      <button class="btn" id="next">Next</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="nav"><span id="answered" class="who"></span><button class="btn accent" id="submitBtn">Submit test</button></div>
+  </section>
 
-      /* Question bank copied from CESSNA_172R_Question PDF (Q66 is blank in the PDF, so it is not used). */
-      const BANK = [
-        {
-          n: 1,
-          q: "Ignition operation is controlled by rotary switch which is controlled by",
-          o: {
-            A: "R,L & Both",
-            B: "R,L, Both & Start",
-            C: "R,L & Start",
-            D: "L, Both & Start",
-          },
-          a: "B",
-        },
-        {
-          n: 2,
-          q: "Which of the following provides best fuel economy",
-          o: {
-            A: "Operation at peak EGT",
-            B: "Operation at 50⁰ F, rich of peak EGT",
-            C: "Operation at 50⁰ C, rich of peak EGT",
-            D: "Operation at 25⁰ C, rich of peak EGT",
-          },
-          a: "A",
-        },
-        {
-          n: 3,
-          q: "Oil pressure gauge markings",
-          o: {
-            A: "Red line for minimum permissible ideal pressure",
-            B: "Green arc between 50 – 90 psi",
-            C: "Red line for maximum permissible ideal pressure",
-            D: "All are correct",
-          },
-          a: "D",
-        },
-        {
-          n: 4,
-          q: "Examination of fuel in the system for contamination",
-          o: {
-            A: "Before first flight everyday",
-            B: "After each refuelling",
-            C: "As in (A) & (B)",
-            D: "No need to examine",
-          },
-          a: "C",
-        },
-        {
-          n: 5,
-          q: "Weak intermittent firing by puffs of black smoke caused by",
-          o: {
-            A: "Spark plug fouling",
-            B: "Magneto malfunction",
-            C: "Starter malfunction",
-            D: "Over priming",
-          },
-          a: "D",
-        },
-        {
-          n: 6,
-          q: "There was obvious power loss when ignition switch was momentarily turned from both to left cause",
-          o: {
-            A: "Right magneto problem",
-            B: "Left magneto problem",
-            C: "Both",
-            D: "Carburetor icing",
-          },
-          a: "B",
-        },
-        {
-          n: 7,
-          q: "To apply parking brakes",
-          o: {
-            A: "Set brake with rudder paddle",
-            B: "As in (A) & pull handle aft",
-            C: "As in (B) & rotate 90⁰ down",
-            D: "All wrong",
-          },
-          a: "C",
-        },
-        {
-          n: 8,
-          q: "The VSI depicts",
-          o: {
-            A: "Rate of climb in ft/min",
-            B: "Rate of descend in ft/min",
-            C: "Both of (A) & (B) are wrong",
-            D: "Rate of climb or descend in ft/min",
-          },
-          a: "D",
-        },
-        {
-          n: 9,
-          q: "The engine driven vacuum system provides",
-          o: {
-            A: "Pressure to operate attitude indicator & airspeed indicator",
-            B: "Pressure to operate airspeed indicator & altimeter",
-            C: "Suction necessary to operate direction indicator & attitude indicator",
-            D: "Suction necessary to operate direction indicator & airspeed indicator",
-          },
-          a: "C",
-        },
-        {
-          n: 10,
-          q: "The center area of instrument panel contains",
-          o: {
-            A: "Static pressure alternate source valve",
-            B: "Auxiliary fuel pump section",
-            C: "Suction gauge",
-            D: "All of the above",
-          },
-          a: "A",
-        },
-        {
-          n: 11,
-          q: "In attitude indicator which is not marked in each side of central marking",
-          o: { A: "20 deg", B: "30 deg", C: "40 deg", D: "60 deg" },
-          a: "C",
-        },
-        {
-          n: 12,
-          q: "In long flight which is the maximum deviation in compass for precession error",
-          o: { A: "20 deg", B: "25 deg", C: "30 deg", D: "40 deg" },
-          a: "C",
-        },
-        {
-          n: 13,
-          q: "For maximum cabin heat",
-          o: {
-            A: "Cabin air knob push in",
-            B: "Cabin heat knob pushed out",
-            C: "As in (A) & cabin heat knob is pulled out",
-            D: "As in (B) & cabin air knob is pulled out",
-          },
-          a: "D",
-        },
-        {
-          n: 14,
-          q: "Stall warning is activated",
-          o: {
-            A: "5 to 10 knots above stalling speed during take off",
-            B: "5 to 10 knots above stalling speed during take off only",
-            C: "5 to 10 knots above stalling speed in all condition",
-            D: "5 to 10 knots above stalling speed in landing only",
-          },
-          a: "C",
-        },
-        {
-          n: 15,
-          q: "ELT annunciator does not activate on",
-          o: {
-            A: "Low fuel flow",
-            B: "Low pressure",
-            C: "Low vacuum",
-            D: "Low voltage",
-          },
-          a: "A",
-        },
-        {
-          n: 16,
-          q: "Oil pressure should register in cold weather in",
-          o: {
-            A: "30 secs",
-            B: "60 secs",
-            C: "20 secs",
-            D: "None of the above",
-          },
-          a: "B",
-        },
-        {
-          n: 17,
-          q: "In the event of alternate static door open",
-          o: {
-            A: "ASI will give error of 4 knots",
-            B: "ASI will give error of 7 knots",
-            C: "Altimeter will give error of (+/-) 30 in closed window condition",
-            D: "As in (A) & (B)",
-          },
-          a: "B",
-        },
-        {
-          n: 18,
-          q: "Propeller ground clearance",
-          o: { A: "12 inches", B: "1 feet", C: "11 inches", D: "11.25 inches" },
-          a: "D",
-        },
-        {
-          n: 19,
-          q: "Minimum turning radius of A/c",
-          o: {
-            A: "25 ft 5.5 inches",
-            B: "26 ft 5 inches",
-            C: "27 ft 5.5 inches",
-            D: "27 ft 5 inches",
-          },
-          a: "C",
-        },
-        {
-          n: 20,
-          q: "Abrupt use of control is prohibited beyond",
-          o: {
-            A: "90 knots",
-            B: "99 knots",
-            C: "113 knots",
-            D: "None of the above",
-          },
-          a: "B",
-        },
-        {
-          n: 21,
-          q: "Yellow arc of ASI",
-          o: {
-            A: "44 – 129 knots",
-            B: "129 – 163 knots",
-            C: "163 knots",
-            D: "33 – 85 knots",
-          },
-          a: "B",
-        },
-        {
-          n: 22,
-          q: "Minimum oil pressure of A/c",
-          o: {
-            A: "20 psi",
-            B: "20 inches",
-            C: "30 psi",
-            D: "None of the above",
-          },
-          a: "A",
-        },
-        {
-          n: 23,
-          q: "Alternator should be switched off in event of ammeter reading",
-          o: {
-            A: "Less than 31.5 Volts",
-            B: "32 Volts",
-            C: "More than 30 Volts",
-            D: "More than 31.5 Volts",
-          },
-          a: "D",
-        },
-        {
-          n: 24,
-          q: "Compass error upto 25⁰ may come in event of alternator",
-          o: {
-            A: "Switched on",
-            B: "Switched off",
-            C: "No charging",
-            D: "None of the above",
-          },
-          a: "B",
-        },
-        {
-          n: 25,
-          q: "D.G.I (or compass) has to be aligned regularly on long flight for",
-          o: { A: "Precision" },
-          a: "A",
-        },
-        {
-          n: 26,
-          q: "Maximum window open speed",
-          o: { A: "160 knots", B: "140 knots", C: "113 knots", D: "163 knots" },
-          a: "D",
-        },
-        {
-          n: 27,
-          q: "Maximum oil pressure",
-          o: { A: "Not given", B: "50 psi", C: "115 psi", D: "160 psi" },
-          a: "C",
-        },
-        {
-          n: 28,
-          q: "Unusable fuel quantity in each tank",
-          o: {
-            A: "21.5 US gallons",
-            B: "1.5 US gallons",
-            C: "53 US gallons",
-            D: "None of the above",
-          },
-          a: "B",
-        },
-        {
-          n: 29,
-          q: "Maximum ramp weight is",
-          o: { A: "2107 lbs", B: "2450 lbs", C: "2457 lbs", D: "2100 lbs" },
-          a: "C",
-        },
-        {
-          n: 30,
-          q: "Maximum slip duration with one tank dry",
-          o: {
-            A: "60 secs",
-            B: "30 secs",
-            C: "50 secs",
-            D: "None of the above",
-          },
-          a: "B",
-        },
-        {
-          n: 31,
-          q: "Colour of 100 LL (Low Lead) fuel",
-          o: { A: "Blue", B: "Green", C: "Yellow", D: "Orange" },
-          a: "A",
-        },
-        {
-          n: 32,
-          q: "Minimum oil quantity for extended flights is",
-          o: {
-            A: "7 quarts",
-            B: "9 quarts",
-            C: "None of the above",
-            D: "5 quarts",
-          },
-          a: "D",
-        },
-        {
-          n: 33,
-          q: "Connection in fuel of DiEGME (DiEthyl Glycol Monomethyl Ether)",
-          o: { A: "1%", B: "0.25%", C: "0.1% only", D: "0.10% to 0.15%" },
-          a: "D",
-        },
-        {
-          n: 34,
-          q: "Concentration in fuel of isopropyl alcohol",
-          o: { A: "1%", B: "2%", C: "0.10%", D: "0.10% to 0.15%" },
-          a: "A",
-        },
-        {
-          n: 35,
-          q: "Which oil is to be used after 50 hrs of engine running or when the oil consumption has been stabilized",
-          o: {
-            A: "SAE-J-1966 aviation grade straight mineral oil",
-            B: "MIL-L-22851",
-            C: "SAE J1899 aviation grade ashless dispersant oil",
-            D: "As in (B) & (C)",
-          },
-          a: "D",
-        },
-        {
-          n: 36,
-          q: "Maximum deflection of nose wheel by use of rudder paddle on ground is",
-          o: {
-            A: "10⁰ to either side",
-            B: "10⁰ to left side only",
-            C: "10⁰ to right side only",
-            D: "30⁰ to either side",
-          },
-          a: "A",
-        },
-        {
-          n: 37,
-          q: "Mechanical stops on flaps are",
-          o: {
-            A: "At 10⁰",
-            B: "At 20⁰",
-            C: "At 30⁰",
-            D: "All of the above are correct",
-          },
-          a: "D",
-        },
-        {
-          n: 38,
-          q: "Best rate of climb speed at sea level is",
-          o: {
-            A: "79 knots",
-            B: "59 knots",
-            C: "68 knots",
-            D: "All of the above are correct",
-          },
-          a: "A",
-        },
-        {
-          n: 39,
-          q: "Shock absorption on nose wheel",
-          o: {
-            A: "Hydraulic",
-            B: "Oil system only",
-            C: "Air & oil system",
-            D: "All are correct",
-          },
-          a: "C",
-        },
-        {
-          n: 40,
-          q: "Shock absorption on main wheel",
-          o: {
-            A: "Air / oil system",
-            B: "Tubular spring",
-            C: "Hydraulic",
-            D: "None of the above",
-          },
-          a: "B",
-        },
-        {
-          n: 41,
-          q: "If engine floods",
-          o: {
-            A: "Turn off auxillary fuel pump & place mixture in idle cut off",
-            B: "Open half throttle & crank engine when engine fires",
-            C: "Advance mixture to full rich & retard throttle properly",
-            D: "All are correct",
-          },
-          a: "D",
-        },
-        {
-          n: 42,
-          q: "Standard temp. lapse rate",
-          o: {
-            A: "5 deg / 1000 ft",
-            B: "2 deg / 1000 m",
-            C: "2 deg / 1000 ft",
-            D: "5 deg / 1000m",
-          },
-          a: "C",
-        },
-        {
-          n: 43,
-          q: "Starter cycle for engine is",
-          o: {
-            A: "10 secs ‘ON’",
-            B: "10 secs ‘OFF’",
-            C: "3 times & then 10 mins gap for cooling to be given",
-            D: "As in (A) & (C)",
-          },
-          a: "D",
-        },
-        {
-          n: 44,
-          q: "Enroute climb speed is 5 to 10 knots above best rate of climb speed for",
-          o: {
-            A: "Poor visibility, performance & cooling",
-            B: "Best visibility",
-            C: "As in (B) & best performance",
-            D: "As in (C) & best cooling",
-          },
-          a: "D",
-        },
-        {
-          n: 45,
-          q: "Until 50 hrs has been accumulated engine should be run at",
-          o: {
-            A: "60% power on cruise",
-            B: "100% power on cruise",
-            C: "80% power on cruise",
-            D: "Do not use power",
-          },
-          a: "C",
-        },
-        {
-          n: 46,
-          q: "An open alternate door will result in an",
-          o: {
-            A: "Approx. 10% loss of power at half throttle",
-            B: "Approx. 10% loss of power at full throttle",
-            C: "No power loss",
-            D: "Approx. 10% increase of power at full throttle",
-          },
-          a: "B",
-        },
-        {
-          n: 47,
-          q: "Carburetor icing is indicated by",
-          o: {
-            A: "Loss of rpm in fixed pitch propeller",
-            B: "Increase of rpm in fixed pitch propeller",
-            C: "Loss of manifold pressure in constant speed propeller",
-            D: "As in (A) & (C)",
-          },
-          a: "D",
-        },
-        {
-          n: 48,
-          q: "Nose gear shock strut pressure",
-          o: { A: "40 psi", B: "20 psi", C: "45 psi", D: "25 psi" },
-          a: "C",
-        },
-        {
-          n: 49,
-          q: "Ouside air temp. (OAT) / Voltmeter gauge select switch may be used by putting the select button down off",
-          o: {
-            A: "5 secs to start",
-            B: "3 secs to start",
-            C: "4 secs to start",
-            D: "None of the above",
-          },
-          a: "B",
-        },
-        {
-          n: 50,
-          q: "If the PTT button of microphone is kept pressed more than 33 secs in continuous then the transmission is",
-          o: {
-            A: "Automatically terminated",
-            B: "Switched Off",
-            C: "Switched ON",
-            D: "None of the above",
-          },
-          a: "A",
-        },
-        {
-          n: 51,
-          q: "In Voltmeter / OAT / CLOCK pushing upper control button will change the display on window",
-          o: { A: "S-T-A-R-T", B: "E-N-D", C: "E-F-C-E", D: "F-E-C-F" },
-          a: "C",
-        },
-        {
-          n: 52,
-          q: "Maximum fuel capacity of each tank",
-          o: {
-            A: "56 US gallons",
-            B: "3 US gallons",
-            C: "28 US gallons",
-            D: "1.5 US gallons",
-          },
-          a: "C",
-        },
-        {
-          n: 53,
-          q: "Spark plug fault causes",
-          o: {
-            A: "Loss of RPM",
-            B: "Loss of Fuel",
-            C: "Increase in RPM",
-            D: "None of the above",
-          },
-          a: "A",
-        },
-        {
-          n: 54,
-          q: "Magneto malfunction causes",
-          o: {
-            A: "Loss of RPM",
-            B: "Loss of fuel",
-            C: "Misfiring",
-            D: "All of the above",
-          },
-          a: "C",
-        },
-        {
-          n: 55,
-          q: "Brake of the A/c",
-          o: {
-            A: "MIL-L-6082",
-            B: "MIL-L-2285",
-            C: "MIL-H-5606",
-            D: "MIL-H-5686",
-          },
-          a: "C",
-        },
-        {
-          n: 56,
-          q: "Tyre pressure of nose wheel tyre",
-          o: { A: "45 psi", B: "34 psi", C: "28 psi", D: "30 psi" },
-          a: "B",
-        },
-        {
-          n: 57,
-          q: "Tyre pressure of main wheel tyre",
-          o: { A: "45 psi", B: "34 psi", C: "28 psi", D: "30 psi" },
-          a: "C",
-        },
-        {
-          n: 58,
-          q: "Nose wheel strut length",
-          o: { A: "2 inches", B: "3 inches", C: "1 inches", D: "5 inches" },
-          a: "A",
-        },
-        {
-          n: 59,
-          q: "Propeller diameter",
-          o: { A: "69 inches", B: "75 inches", C: "67 inches", D: "73 inches" },
-          a: "B",
-        },
-        {
-          n: 60,
-          q: "Engine model number",
-          o: {
-            A: "IO-360-L2A",
-            B: "IO-280-L2A",
-            C: "IO-360-N2C",
-            D: "Not given",
-          },
-          a: "A",
-        },
-        {
-          n: 61,
-          q: "Standard empty weight of A/c",
-          o: { A: "1369", B: "1639", C: "2100", D: "1600" },
-          a: "B",
-        },
-        {
-          n: 62,
-          q: "Baggage compartment contains",
-          o: {
-            A: "Baggage compartment 1 has allowance of 120 lbs",
-            B: "Baggage compartment 2 has allowance of 50 lbs",
-            C: "Total baggage compartment allowance is 120 lbs",
-            D: "All are correct",
-          },
-          a: "D",
-        },
-        {
-          n: 63,
-          q: "Max useful load of A/c",
-          o: { A: "818 lbs", B: "808 lbs", C: "900 lbs", D: "1600 lbs" },
-          a: "A",
-        },
-        {
-          n: 64,
-          q: "Wing loading of A/c",
-          o: {
-            A: "14.1 kg/sq.ft",
-            B: "15.3 lbs/Hp",
-            C: "14.1 lbs/sq.ft",
-            D: "14.1 lbs/m",
-          },
-          a: "C",
-        },
-        {
-          n: 65,
-          q: "Power loading of A/c",
-          o: {
-            A: "15.3 kg/Hp",
-            B: "15.3 lbs/m",
-            C: "14.1 lbs/sq.ft",
-            D: "15.3 lbs/Hp",
-          },
-          a: "D",
-        },
-        {
-          n: 67,
-          q: "Wing area of A/c",
-          o: {
-            A: "169 sq.ft",
-            B: "174 sq.inches",
-            C: "174 sq.ft",
-            D: "None of the above",
-          },
-          a: "C",
-        },
-        {
-          n: 68,
-          q: "Elevator span of an A/c",
-          o: { A: "11’ 2’’", B: "11’ 4’’", C: "36’ 1’’", D: "65’’" },
-          a: "B",
-        },
-        {
-          n: 69,
-          q: "Wheel base length of A/c",
-          o: { A: "65’’", B: "75’’", C: "74’’", D: "None of the above" },
-          a: "A",
-        },
-        {
-          n: 70,
-          q: "Horse power rating & engine power",
-          o: {
-            A: "108 BHP, 2800 RPM",
-            B: "160 BHP, 2400 RPM",
-            C: "108 BHP, 2450 RPM",
-            D: "160 BHP, 2100 RPM",
-          },
-          a: "B",
-        },
-        {
-          n: 71,
-          q: "Propeller model no. of A/c",
-          o: {
-            A: "IO-360-L2A",
-            B: "IC235/LFA7570",
-            C: "IC235/DSA7570",
-            D: "IC360/LFA7570",
-          },
-          a: "B",
-        },
-        {
-          n: 72,
-          q: "Airspeed when fails after take off",
-          o: {
-            A: "Flaps Up 60 kias, Flaps Down 65 kias",
-            B: "Flaps Up 70 kias, Flaps Down 65 kias",
-            C: "Flaps Up 65 kias, Flaps Down 60 kias",
-            D: "Flaps Up or Down 65 kias",
-          },
-          a: "C",
-        },
-        {
-          n: 73,
-          q: "Landing with a flat main tyre, Flaps will be",
-          o: { A: "10 deg", B: "20 deg", C: "As required", D: "30 deg" },
-          a: "D",
-        },
-        {
-          n: 74,
-          q: "Landing with a flat nose tyre, Flaps will be",
-          o: { A: "30 deg", B: "As required", C: "10 deg", D: "Not required" },
-          a: "B",
-        },
-        {
-          n: 75,
-          q: "Engine failure during take off roll the first action will be",
-          o: {
-            A: "Brakes apply",
-            B: "Wings flaps retract",
-            C: "Ignition switch off",
-            D: "Throttle idle",
-          },
-          a: "D",
-        },
-        {
-          n: 76,
-          q: "If fire occurs during start on ground the throttle & mixture will be",
-          o: {
-            A: "Throttle – half open & mixture idle cut off",
-            B: "Throttle – full open & mixture idle cut off",
-            C: "Throttle – close & mixture – rich",
-            D: "Throttle – full open & mixture -rich",
-          },
-          a: "B",
-        },
-        {
-          n: 77,
-          q: "Descending through clouds to go around against spiral dive & to minimize compass card swings due to changing bank angle",
-          o: {
-            A: "Choose a heading shown in compass",
-            B: "Choose a easterly heading",
-            C: "Choose a westerly heading",
-            D: "As in (B) & (C)",
-          },
-          a: "D",
-        },
-        {
-          n: 78,
-          q: "The magneto check should be made",
-          o: {
-            A: "Before start up",
-            B: "At 1800 RPM",
-            C: "At 2000 RPM",
-            D: "At 1700 RPM",
-          },
-          a: "B",
-        },
-        {
-          n: 79,
-          q: "The A/c is equipped with",
-          o: {
-            A: "A 28 volt, direct current electrical system",
-            B: "A 28 volt, indirect current electrical system",
-            C: "A 34 volt, direct current electrical system",
-            D: "None of the above",
-          },
-          a: "A",
-        },
-        {
-          n: 80,
-          q: "The electrical system of A/c is powered by",
-          o: {
-            A: "A belt driven 60amp alternator & 34 volt battery",
-            B: "A 20amp alternator & (+/-) 30 volt battery",
-            C: "A 34 volt, direct current electrical system",
-            D: "None of the above",
-          },
-          a: "C",
-        },
-        {
-          n: 81,
-          q: "The desired vacuum range of an A/c is",
-          o: {
-            A: "4 to 5 mm of mercury",
-            B: "4 to 5 inch of mercury",
-            C: "4.5 to 5.5 mm of mercury",
-            D: "4.5 to 5.5 inch of mercury",
-          },
-          a: "D",
-        },
-        {
-          n: 82,
-          q: "The communication receiver transmitter receives & transmits singal",
-          o: {
-            A: "Between 110.35 & 136.975 Mhz with 35 Khz spacing",
-            B: "Between 118.06 & 136.972 Mhz with 25 Khz spacing",
-            C: "Not receives & transmits singals",
-            D: "None of the above",
-          },
-          a: "B",
-        },
-        {
-          n: 83,
-          q: "The navigation receiver receives VOR & Localizer signals",
-          o: {
-            A: "Between 108.00 & 117.95 Mhz in 50 Khz steps",
-            B: "Between 118.00 & 136.975 Mhz in 25 Khz steps",
-            C: "Between 108.00 & 136.975 Mhz in 50 Khz steps",
-            D: "None of the above",
-          },
-          a: "A",
-        },
-        {
-          n: 84,
-          q: "A/c has clock model",
-          o: {
-            A: "The Levis model simple clock",
-            B: "The Davtron model 803 digital clock",
-            C: "The Levis model 803 digital clock",
-            D: "The Davtron model simple clock",
-          },
-          a: "B",
-        },
-        {
-          n: 85,
-          q: "The clock of an A/c combines the feature of",
-          o: {
-            A: "A Clock",
-            B: "Outside air temp. gauge",
-            C: "Voltmeter",
-            D: "All of the above",
-          },
-          a: "D",
-        },
-        {
-          n: 86,
-          q: "Take off speed for normal climb",
-          o: {
-            A: "60 – 65 kias",
-            B: "65 – 75 kias",
-            C: "70 – 80 kias",
-            D: "75 – 80 kias",
-          },
-          a: "C",
-        },
-        {
-          n: 87,
-          q: "Enroute climb at sea level airspeed is",
-          o: {
-            A: "75 – 85 kias with flaps up",
-            B: "75 – 85 kias with flaps down",
-            C: "70 – 80 kias with flaps up",
-            D: "70 – 80 kias with flaps down",
-          },
-          a: "A",
-        },
-        {
-          n: 88,
-          q: "Engine manufacturer of an A/c",
-          o: {
-            A: "Avco Lycoming",
-            B: "Textron Lycoming",
-            C: "McCauley",
-            D: "None",
-          },
-          a: "B",
-        },
-        {
-          n: 89,
-          q: "Engine type of A/c",
-          o: {
-            A: "Four cylinder engine",
-            B: "Fuel injection",
-            C: "Air cooled",
-            D: "All are correct",
-          },
-          a: "D",
-        },
-        {
-          n: 90,
-          q: "MIL-L-6082 or SAE J1966 Aviation Grade Straight Mineral Oil is used",
-          o: {
-            A: "To replenish the supply during first 25 hrs",
-            B: "To replenish the supply during first 75 hrs",
-            C: "Use until total of first 50 hrs",
-            D: "(A) & (C) are correct",
-          },
-          a: "D",
-        },
-        {
-          n: 91,
-          q: "At sea level, best rate of climb speed is",
-          o: { A: "70 kias", B: "79 kias", C: "71 kias", D: "65 kias" },
-          a: "B",
-        },
-        {
-          n: 92,
-          q: "At 10,000 ft best angle of climb speed",
-          o: { A: "70 kias", B: "79 kias", C: "71 kias", D: "65 kias" },
-          a: "D",
-        },
-        {
-          n: 93,
-          q: "Landing approach speed",
-          o: {
-            A: "Normal approach speed at 65 – 75 kias",
-            B: "Normal approach speed at 60 – 70 kias",
-            C: "Short field approach speed of 62 kias with flaps 30 deg",
-            D: "All are correct",
-          },
-          a: "D",
-        },
-        {
-          n: 94,
-          q: "Max oil temp.",
-          o: { A: "118⁰ C", B: "245 F", C: "(A) & (B)", D: "100 F" },
-          a: "C",
-        },
-        {
-          n: 95,
-          q: "Max Flap extended speed of A/c",
-          o: {
-            A: "110 kias for 10⁰ flaps",
-            B: "85 kias for 10⁰ to 30⁰ flaps",
-            C: "123 kias for 0⁰ to 30⁰ flaps",
-            D: "(A) & (B)",
-          },
-          a: "D",
-        },
-        {
-          n: 96,
-          q: "Vne of A/c",
-          o: {
-            A: "160 kcas or 163 kias",
-            B: "126 kcas or 129 kias",
-            C: "108 kcas or 110 kias",
-            D: "140 kcas or 145 kias",
-          },
-          a: "A",
-        },
-        {
-          n: 97,
-          q: "Max structural cruising speed of A/c",
-          o: {
-            A: "160 kcas or 163 kias",
-            B: "126 kcas or 129 kias",
-            C: "108 kcas or 110 kias",
-            D: "140 kcas or 145 kias",
-          },
-          a: "B",
-        },
-        {
-          n: 98,
-          q: "Which of the following statement is incorrect",
-          o: {
-            A: "No aerobatic maneuvers approved",
-            B: "Acrobatic maneuvers approved",
-            C: "DAY – NIGHT – VFR – IFR approved",
-            D: "Flight into icing condition prohibited",
-          },
-          a: "D",
-        },
-        {
-          n: 99,
-          q: "While ditching",
-          o: {
-            A: "Transmit MAYDAY on 121.5 Mhz giving location & intention & SQUAWK 7700",
-            B: "Transmit HELP on 121.5 Mhz giving location & intention on SQUAWK 7700",
-            C: "Transmit MAYDAY on 98.3 Mhz giving location & intention & SQUAWK 7200",
-            D: "None of the above",
-          },
-          a: "A",
-        },
-        {
-          n: 100,
-          q: "The set of radius contains",
-          o: {
-            A: "A 760 channel VHF communication receiver",
-            B: "A 200 channel VHF navigation receiver",
-            C: "A 350 channel VHF navigation receiver",
-            D: "As in (A) & (B)",
-          },
-          a: "D",
-        },
-      ];
+  <section id="result" class="hidden">
+    <div class="who" id="resWho"></div>
+    <div class="score" id="score"></div>
+    <div id="resMeta" class="who"></div>
+    <div class="status" id="saveStatus"></div>
+    <div class="actions">
+      <button class="btn accent" id="pdfBtn">Download PDF</button>
+      <button class="btn ghost hidden" id="retrySave">Retry saving result</button>
+    </div>
+    <div id="review"></div>
+  </section>
+</div>
 
-      const $ = (id) => document.getElementById(id);
-      let paper = [],
-        answers = {},
-        cur = 0,
-        name = "",
-        startedAt = 0,
-        endAt = 0,
-        tick = null,
-        submitted = false,
-        payload = null;
+<script>
+/* ===== CONFIG: fill these two values ===== */
+const SUPABASE_URL = "https://heffsbxcpefpjcrmdupw.supabase.co";      // e.g. https://abcdxyz.supabase.co
+const SUPABASE_KEY = "sb_publishable_2JvGUfJFQvCm2_eM68UDvA_DgTBBDjb"; // anon / publishable key
+const TABLE = "test_results";
+const TOTAL_Q = 50, DURATION_MS = 45*60*1000;
+/* ========================================= */
 
-      function shuffle(a) {
-        const r = a.slice();
-        for (let i = r.length - 1; i > 0; i--) {
-          const b = new Uint32Array(1);
-          crypto.getRandomValues(b);
-          const j = b[0] % (i + 1);
-          [r[i], r[j]] = [r[j], r[i]];
-        }
-        return r;
-      }
-      function show(id) {
-        ["start", "test", "result"].forEach((s) =>
-          $(s).classList.toggle("hidden", s !== id),
-        );
-        window.scrollTo(0, 0);
-      }
-      function el(t, c, txt) {
-        const e = document.createElement(t);
-        if (c) e.className = c;
-        if (txt !== undefined) e.textContent = txt;
-        return e;
-      }
+/* Question bank copied from CESSNA_172R_Question PDF (Q66 is blank in the PDF, so it is not used). */
+const BANK = [{"n": 1, "q": "Ignition operation is controlled by rotary switch which is controlled by", "o": {"A": "R,L & Both", "B": "R,L, Both & Start", "C": "R,L & Start", "D": "L, Both & Start"}, "a": "B"}, {"n": 2, "q": "Which of the following provides best fuel economy", "o": {"A": "Operation at peak EGT", "B": "Operation at 50⁰ F, rich of peak EGT", "C": "Operation at 50⁰ C, rich of peak EGT", "D": "Operation at 25⁰ C, rich of peak EGT"}, "a": "A"}, {"n": 3, "q": "Oil pressure gauge markings", "o": {"A": "Red line for minimum permissible ideal pressure", "B": "Green arc between 50 – 90 psi", "C": "Red line for maximum permissible ideal pressure", "D": "All are correct"}, "a": "D"}, {"n": 4, "q": "Examination of fuel in the system for contamination", "o": {"A": "Before first flight everyday", "B": "After each refuelling", "C": "As in (A) & (B)", "D": "No need to examine"}, "a": "C"}, {"n": 5, "q": "Weak intermittent firing by puffs of black smoke caused by", "o": {"A": "Spark plug fouling", "B": "Magneto malfunction", "C": "Starter malfunction", "D": "Over priming"}, "a": "D"}, {"n": 6, "q": "There was obvious power loss when ignition switch was momentarily turned from both to left cause", "o": {"A": "Right magneto problem", "B": "Left magneto problem", "C": "Both", "D": "Carburetor icing"}, "a": "B"}, {"n": 7, "q": "To apply parking brakes", "o": {"A": "Set brake with rudder paddle", "B": "As in (A) & pull handle aft", "C": "As in (B) & rotate 90⁰ down", "D": "All wrong"}, "a": "C"}, {"n": 8, "q": "The VSI depicts", "o": {"A": "Rate of climb in ft/min", "B": "Rate of descend in ft/min", "C": "Both of (A) & (B) are wrong", "D": "Rate of climb or descend in ft/min"}, "a": "D"}, {"n": 9, "q": "The engine driven vacuum system provides", "o": {"A": "Pressure to operate attitude indicator & airspeed indicator", "B": "Pressure to operate airspeed indicator & altimeter", "C": "Suction necessary to operate direction indicator & attitude indicator", "D": "Suction necessary to operate direction indicator & airspeed indicator"}, "a": "C"}, {"n": 10, "q": "The center area of instrument panel contains", "o": {"A": "Static pressure alternate source valve", "B": "Auxiliary fuel pump section", "C": "Suction gauge", "D": "All of the above"}, "a": "A"}, {"n": 11, "q": "In attitude indicator which is not marked in each side of central marking", "o": {"A": "20 deg", "B": "30 deg", "C": "40 deg", "D": "60 deg"}, "a": "C"}, {"n": 12, "q": "In long flight which is the maximum deviation in compass for precession error", "o": {"A": "20 deg", "B": "25 deg", "C": "30 deg", "D": "40 deg"}, "a": "C"}, {"n": 13, "q": "For maximum cabin heat", "o": {"A": "Cabin air knob push in", "B": "Cabin heat knob pushed out", "C": "As in (A) & cabin heat knob is pulled out", "D": "As in (B) & cabin air knob is pulled out"}, "a": "D"}, {"n": 14, "q": "Stall warning is activated", "o": {"A": "5 to 10 knots above stalling speed during take off", "B": "5 to 10 knots above stalling speed during take off only", "C": "5 to 10 knots above stalling speed in all condition", "D": "5 to 10 knots above stalling speed in landing only"}, "a": "C"}, {"n": 15, "q": "ELT annunciator does not activate on", "o": {"A": "Low fuel flow", "B": "Low pressure", "C": "Low vacuum", "D": "Low voltage"}, "a": "A"}, {"n": 16, "q": "Oil pressure should register in cold weather in", "o": {"A": "30 secs", "B": "60 secs", "C": "20 secs", "D": "None of the above"}, "a": "B"}, {"n": 17, "q": "In the event of alternate static door open", "o": {"A": "ASI will give error of 4 knots", "B": "ASI will give error of 7 knots", "C": "Altimeter will give error of (+/-) 30 in closed window condition", "D": "As in (A) & (B)"}, "a": "B"}, {"n": 18, "q": "Propeller ground clearance", "o": {"A": "12 inches", "B": "1 feet", "C": "11 inches", "D": "11.25 inches"}, "a": "D"}, {"n": 19, "q": "Minimum turning radius of A/c", "o": {"A": "25 ft 5.5 inches", "B": "26 ft 5 inches", "C": "27 ft 5.5 inches", "D": "27 ft 5 inches"}, "a": "C"}, {"n": 20, "q": "Abrupt use of control is prohibited beyond", "o": {"A": "90 knots", "B": "99 knots", "C": "113 knots", "D": "None of the above"}, "a": "B"}, {"n": 21, "q": "Yellow arc of ASI", "o": {"A": "44 – 129 knots", "B": "129 – 163 knots", "C": "163 knots", "D": "33 – 85 knots"}, "a": "B"}, {"n": 22, "q": "Minimum oil pressure of A/c", "o": {"A": "20 psi", "B": "20 inches", "C": "30 psi", "D": "None of the above"}, "a": "A"}, {"n": 23, "q": "Alternator should be switched off in event of ammeter reading", "o": {"A": "Less than 31.5 Volts", "B": "32 Volts", "C": "More than 30 Volts", "D": "More than 31.5 Volts"}, "a": "D"}, {"n": 24, "q": "Compass error upto 25⁰ may come in event of alternator", "o": {"A": "Switched on", "B": "Switched off", "C": "No charging", "D": "None of the above"}, "a": "B"}, {"n": 25, "q": "D.G.I (or compass) has to be aligned regularly on long flight for", "o": {"A": "Precision"}, "a": "A"}, {"n": 26, "q": "Maximum window open speed", "o": {"A": "160 knots", "B": "140 knots", "C": "113 knots", "D": "163 knots"}, "a": "D"}, {"n": 27, "q": "Maximum oil pressure", "o": {"A": "Not given", "B": "50 psi", "C": "115 psi", "D": "160 psi"}, "a": "C"}, {"n": 28, "q": "Unusable fuel quantity in each tank", "o": {"A": "21.5 US gallons", "B": "1.5 US gallons", "C": "53 US gallons", "D": "None of the above"}, "a": "B"}, {"n": 29, "q": "Maximum ramp weight is", "o": {"A": "2107 lbs", "B": "2450 lbs", "C": "2457 lbs", "D": "2100 lbs"}, "a": "C"}, {"n": 30, "q": "Maximum slip duration with one tank dry", "o": {"A": "60 secs", "B": "30 secs", "C": "50 secs", "D": "None of the above"}, "a": "B"}, {"n": 31, "q": "Colour of 100 LL (Low Lead) fuel", "o": {"A": "Blue", "B": "Green", "C": "Yellow", "D": "Orange"}, "a": "A"}, {"n": 32, "q": "Minimum oil quantity for extended flights is", "o": {"A": "7 quarts", "B": "9 quarts", "C": "None of the above", "D": "5 quarts"}, "a": "D"}, {"n": 33, "q": "Connection in fuel of DiEGME (DiEthyl Glycol Monomethyl Ether)", "o": {"A": "1%", "B": "0.25%", "C": "0.1% only", "D": "0.10% to 0.15%"}, "a": "D"}, {"n": 34, "q": "Concentration in fuel of isopropyl alcohol", "o": {"A": "1%", "B": "2%", "C": "0.10%", "D": "0.10% to 0.15%"}, "a": "A"}, {"n": 35, "q": "Which oil is to be used after 50 hrs of engine running or when the oil consumption has been stabilized", "o": {"A": "SAE-J-1966 aviation grade straight mineral oil", "B": "MIL-L-22851", "C": "SAE J1899 aviation grade ashless dispersant oil", "D": "As in (B) & (C)"}, "a": "D"}, {"n": 36, "q": "Maximum deflection of nose wheel by use of rudder paddle on ground is", "o": {"A": "10⁰ to either side", "B": "10⁰ to left side only", "C": "10⁰ to right side only", "D": "30⁰ to either side"}, "a": "A"}, {"n": 37, "q": "Mechanical stops on flaps are", "o": {"A": "At 10⁰", "B": "At 20⁰", "C": "At 30⁰", "D": "All of the above are correct"}, "a": "D"}, {"n": 38, "q": "Best rate of climb speed at sea level is", "o": {"A": "79 knots", "B": "59 knots", "C": "68 knots", "D": "All of the above are correct"}, "a": "A"}, {"n": 39, "q": "Shock absorption on nose wheel", "o": {"A": "Hydraulic", "B": "Oil system only", "C": "Air & oil system", "D": "All are correct"}, "a": "C"}, {"n": 40, "q": "Shock absorption on main wheel", "o": {"A": "Air / oil system", "B": "Tubular spring", "C": "Hydraulic", "D": "None of the above"}, "a": "B"}, {"n": 41, "q": "If engine floods", "o": {"A": "Turn off auxillary fuel pump & place mixture in idle cut off", "B": "Open half throttle & crank engine when engine fires", "C": "Advance mixture to full rich & retard throttle properly", "D": "All are correct"}, "a": "D"}, {"n": 42, "q": "Standard temp. lapse rate", "o": {"A": "5 deg / 1000 ft", "B": "2 deg / 1000 m", "C": "2 deg / 1000 ft", "D": "5 deg / 1000m"}, "a": "C"}, {"n": 43, "q": "Starter cycle for engine is", "o": {"A": "10 secs ‘ON’", "B": "10 secs ‘OFF’", "C": "3 times & then 10 mins gap for cooling to be given", "D": "As in (A) & (C)"}, "a": "D"}, {"n": 44, "q": "Enroute climb speed is 5 to 10 knots above best rate of climb speed for", "o": {"A": "Poor visibility, performance & cooling", "B": "Best visibility", "C": "As in (B) & best performance", "D": "As in (C) & best cooling"}, "a": "D"}, {"n": 45, "q": "Until 50 hrs has been accumulated engine should be run at", "o": {"A": "60% power on cruise", "B": "100% power on cruise", "C": "80% power on cruise", "D": "Do not use power"}, "a": "C"}, {"n": 46, "q": "An open alternate door will result in an", "o": {"A": "Approx. 10% loss of power at half throttle", "B": "Approx. 10% loss of power at full throttle", "C": "No power loss", "D": "Approx. 10% increase of power at full throttle"}, "a": "B"}, {"n": 47, "q": "Carburetor icing is indicated by", "o": {"A": "Loss of rpm in fixed pitch propeller", "B": "Increase of rpm in fixed pitch propeller", "C": "Loss of manifold pressure in constant speed propeller", "D": "As in (A) & (C)"}, "a": "D"}, {"n": 48, "q": "Nose gear shock strut pressure", "o": {"A": "40 psi", "B": "20 psi", "C": "45 psi", "D": "25 psi"}, "a": "C"}, {"n": 49, "q": "Ouside air temp. (OAT) / Voltmeter gauge select switch may be used by putting the select button down off", "o": {"A": "5 secs to start", "B": "3 secs to start", "C": "4 secs to start", "D": "None of the above"}, "a": "B"}, {"n": 50, "q": "If the PTT button of microphone is kept pressed more than 33 secs in continuous then the transmission is", "o": {"A": "Automatically terminated", "B": "Switched Off", "C": "Switched ON", "D": "None of the above"}, "a": "A"}, {"n": 51, "q": "In Voltmeter / OAT / CLOCK pushing upper control button will change the display on window", "o": {"A": "S-T-A-R-T", "B": "E-N-D", "C": "E-F-C-E", "D": "F-E-C-F"}, "a": "C"}, {"n": 52, "q": "Maximum fuel capacity of each tank", "o": {"A": "56 US gallons", "B": "3 US gallons", "C": "28 US gallons", "D": "1.5 US gallons"}, "a": "C"}, {"n": 53, "q": "Spark plug fault causes", "o": {"A": "Loss of RPM", "B": "Loss of Fuel", "C": "Increase in RPM", "D": "None of the above"}, "a": "A"}, {"n": 54, "q": "Magneto malfunction causes", "o": {"A": "Loss of RPM", "B": "Loss of fuel", "C": "Misfiring", "D": "All of the above"}, "a": "C"}, {"n": 55, "q": "Brake of the A/c", "o": {"A": "MIL-L-6082", "B": "MIL-L-2285", "C": "MIL-H-5606", "D": "MIL-H-5686"}, "a": "C"}, {"n": 56, "q": "Tyre pressure of nose wheel tyre", "o": {"A": "45 psi", "B": "34 psi", "C": "28 psi", "D": "30 psi"}, "a": "B"}, {"n": 57, "q": "Tyre pressure of main wheel tyre", "o": {"A": "45 psi", "B": "34 psi", "C": "28 psi", "D": "30 psi"}, "a": "C"}, {"n": 58, "q": "Nose wheel strut length", "o": {"A": "2 inches", "B": "3 inches", "C": "1 inches", "D": "5 inches"}, "a": "A"}, {"n": 59, "q": "Propeller diameter", "o": {"A": "69 inches", "B": "75 inches", "C": "67 inches", "D": "73 inches"}, "a": "B"}, {"n": 60, "q": "Engine model number", "o": {"A": "IO-360-L2A", "B": "IO-280-L2A", "C": "IO-360-N2C", "D": "Not given"}, "a": "A"}, {"n": 61, "q": "Standard empty weight of A/c", "o": {"A": "1369", "B": "1639", "C": "2100", "D": "1600"}, "a": "B"}, {"n": 62, "q": "Baggage compartment contains", "o": {"A": "Baggage compartment 1 has allowance of 120 lbs", "B": "Baggage compartment 2 has allowance of 50 lbs", "C": "Total baggage compartment allowance is 120 lbs", "D": "All are correct"}, "a": "D"}, {"n": 63, "q": "Max useful load of A/c", "o": {"A": "818 lbs", "B": "808 lbs", "C": "900 lbs", "D": "1600 lbs"}, "a": "A"}, {"n": 64, "q": "Wing loading of A/c", "o": {"A": "14.1 kg/sq.ft", "B": "15.3 lbs/Hp", "C": "14.1 lbs/sq.ft", "D": "14.1 lbs/m"}, "a": "C"}, {"n": 65, "q": "Power loading of A/c", "o": {"A": "15.3 kg/Hp", "B": "15.3 lbs/m", "C": "14.1 lbs/sq.ft", "D": "15.3 lbs/Hp"}, "a": "D"}, {"n": 67, "q": "Wing area of A/c", "o": {"A": "169 sq.ft", "B": "174 sq.inches", "C": "174 sq.ft", "D": "None of the above"}, "a": "C"}, {"n": 68, "q": "Elevator span of an A/c", "o": {"A": "11’ 2’’", "B": "11’ 4’’", "C": "36’ 1’’", "D": "65’’"}, "a": "B"}, {"n": 69, "q": "Wheel base length of A/c", "o": {"A": "65’’", "B": "75’’", "C": "74’’", "D": "None of the above"}, "a": "A"}, {"n": 70, "q": "Horse power rating & engine power", "o": {"A": "108 BHP, 2800 RPM", "B": "160 BHP, 2400 RPM", "C": "108 BHP, 2450 RPM", "D": "160 BHP, 2100 RPM"}, "a": "B"}, {"n": 71, "q": "Propeller model no. of A/c", "o": {"A": "IO-360-L2A", "B": "IC235/LFA7570", "C": "IC235/DSA7570", "D": "IC360/LFA7570"}, "a": "B"}, {"n": 72, "q": "Airspeed when fails after take off", "o": {"A": "Flaps Up 60 kias, Flaps Down 65 kias", "B": "Flaps Up 70 kias, Flaps Down 65 kias", "C": "Flaps Up 65 kias, Flaps Down 60 kias", "D": "Flaps Up or Down 65 kias"}, "a": "C"}, {"n": 73, "q": "Landing with a flat main tyre, Flaps will be", "o": {"A": "10 deg", "B": "20 deg", "C": "As required", "D": "30 deg"}, "a": "D"}, {"n": 74, "q": "Landing with a flat nose tyre, Flaps will be", "o": {"A": "30 deg", "B": "As required", "C": "10 deg", "D": "Not required"}, "a": "B"}, {"n": 75, "q": "Engine failure during take off roll the first action will be", "o": {"A": "Brakes apply", "B": "Wings flaps retract", "C": "Ignition switch off", "D": "Throttle idle"}, "a": "D"}, {"n": 76, "q": "If fire occurs during start on ground the throttle & mixture will be", "o": {"A": "Throttle – half open & mixture idle cut off", "B": "Throttle – full open & mixture idle cut off", "C": "Throttle – close & mixture – rich", "D": "Throttle – full open & mixture -rich"}, "a": "B"}, {"n": 77, "q": "Descending through clouds to go around against spiral dive & to minimize compass card swings due to changing bank angle", "o": {"A": "Choose a heading shown in compass", "B": "Choose a easterly heading", "C": "Choose a westerly heading", "D": "As in (B) & (C)"}, "a": "D"}, {"n": 78, "q": "The magneto check should be made", "o": {"A": "Before start up", "B": "At 1800 RPM", "C": "At 2000 RPM", "D": "At 1700 RPM"}, "a": "B"}, {"n": 79, "q": "The A/c is equipped with", "o": {"A": "A 28 volt, direct current electrical system", "B": "A 28 volt, indirect current electrical system", "C": "A 34 volt, direct current electrical system", "D": "None of the above"}, "a": "A"}, {"n": 80, "q": "The electrical system of A/c is powered by", "o": {"A": "A belt driven 60amp alternator & 34 volt battery", "B": "A 20amp alternator & (+/-) 30 volt battery", "C": "A 34 volt, direct current electrical system", "D": "None of the above"}, "a": "C"}, {"n": 81, "q": "The desired vacuum range of an A/c is", "o": {"A": "4 to 5 mm of mercury", "B": "4 to 5 inch of mercury", "C": "4.5 to 5.5 mm of mercury", "D": "4.5 to 5.5 inch of mercury"}, "a": "D"}, {"n": 82, "q": "The communication receiver transmitter receives & transmits singal", "o": {"A": "Between 110.35 & 136.975 Mhz with 35 Khz spacing", "B": "Between 118.06 & 136.972 Mhz with 25 Khz spacing", "C": "Not receives & transmits singals", "D": "None of the above"}, "a": "B"}, {"n": 83, "q": "The navigation receiver receives VOR & Localizer signals", "o": {"A": "Between 108.00 & 117.95 Mhz in 50 Khz steps", "B": "Between 118.00 & 136.975 Mhz in 25 Khz steps", "C": "Between 108.00 & 136.975 Mhz in 50 Khz steps", "D": "None of the above"}, "a": "A"}, {"n": 84, "q": "A/c has clock model", "o": {"A": "The Levis model simple clock", "B": "The Davtron model 803 digital clock", "C": "The Levis model 803 digital clock", "D": "The Davtron model simple clock"}, "a": "B"}, {"n": 85, "q": "The clock of an A/c combines the feature of", "o": {"A": "A Clock", "B": "Outside air temp. gauge", "C": "Voltmeter", "D": "All of the above"}, "a": "D"}, {"n": 86, "q": "Take off speed for normal climb", "o": {"A": "60 – 65 kias", "B": "65 – 75 kias", "C": "70 – 80 kias", "D": "75 – 80 kias"}, "a": "C"}, {"n": 87, "q": "Enroute climb at sea level airspeed is", "o": {"A": "75 – 85 kias with flaps up", "B": "75 – 85 kias with flaps down", "C": "70 – 80 kias with flaps up", "D": "70 – 80 kias with flaps down"}, "a": "A"}, {"n": 88, "q": "Engine manufacturer of an A/c", "o": {"A": "Avco Lycoming", "B": "Textron Lycoming", "C": "McCauley", "D": "None"}, "a": "B"}, {"n": 89, "q": "Engine type of A/c", "o": {"A": "Four cylinder engine", "B": "Fuel injection", "C": "Air cooled", "D": "All are correct"}, "a": "D"}, {"n": 90, "q": "MIL-L-6082 or SAE J1966 Aviation Grade Straight Mineral Oil is used", "o": {"A": "To replenish the supply during first 25 hrs", "B": "To replenish the supply during first 75 hrs", "C": "Use until total of first 50 hrs", "D": "(A) & (C) are correct"}, "a": "D"}, {"n": 91, "q": "At sea level, best rate of climb speed is", "o": {"A": "70 kias", "B": "79 kias", "C": "71 kias", "D": "65 kias"}, "a": "B"}, {"n": 92, "q": "At 10,000 ft best angle of climb speed", "o": {"A": "70 kias", "B": "79 kias", "C": "71 kias", "D": "65 kias"}, "a": "D"}, {"n": 93, "q": "Landing approach speed", "o": {"A": "Normal approach speed at 65 – 75 kias", "B": "Normal approach speed at 60 – 70 kias", "C": "Short field approach speed of 62 kias with flaps 30 deg", "D": "All are correct"}, "a": "D"}, {"n": 94, "q": "Max oil temp.", "o": {"A": "118⁰ C", "B": "245 F", "C": "(A) & (B)", "D": "100 F"}, "a": "C"}, {"n": 95, "q": "Max Flap extended speed of A/c", "o": {"A": "110 kias for 10⁰ flaps", "B": "85 kias for 10⁰ to 30⁰ flaps", "C": "123 kias for 0⁰ to 30⁰ flaps", "D": "(A) & (B)"}, "a": "D"}, {"n": 96, "q": "Vne of A/c", "o": {"A": "160 kcas or 163 kias", "B": "126 kcas or 129 kias", "C": "108 kcas or 110 kias", "D": "140 kcas or 145 kias"}, "a": "A"}, {"n": 97, "q": "Max structural cruising speed of A/c", "o": {"A": "160 kcas or 163 kias", "B": "126 kcas or 129 kias", "C": "108 kcas or 110 kias", "D": "140 kcas or 145 kias"}, "a": "B"}, {"n": 98, "q": "Which of the following statement is incorrect", "o": {"A": "No aerobatic maneuvers approved", "B": "Acrobatic maneuvers approved", "C": "DAY – NIGHT – VFR – IFR approved", "D": "Flight into icing condition prohibited"}, "a": "D"}, {"n": 99, "q": "While ditching", "o": {"A": "Transmit MAYDAY on 121.5 Mhz giving location & intention & SQUAWK 7700", "B": "Transmit HELP on 121.5 Mhz giving location & intention on SQUAWK 7700", "C": "Transmit MAYDAY on 98.3 Mhz giving location & intention & SQUAWK 7200", "D": "None of the above"}, "a": "A"}, {"n": 100, "q": "The set of radius contains", "o": {"A": "A 760 channel VHF communication receiver", "B": "A 200 channel VHF navigation receiver", "C": "A 350 channel VHF navigation receiver", "D": "As in (A) & (B)"}, "a": "D"}];
 
-      $("startBtn").onclick = () => {
-        name = $("name").value.trim().replace(/\s+/g, " ");
-        if (name.length < 2) {
-          $("nameErr").textContent = "Please enter your name to start.";
-          return;
-        }
-        paper = shuffle(BANK).slice(0, TOTAL_Q);
-        answers = {};
-        cur = 0;
-        submitted = false;
-        startedAt = Date.now();
-        endAt = startedAt + DURATION_MS;
-        $("topWho").textContent = name;
-        $("barWho").textContent = name;
-        buildGrid();
-        render();
-        show("test");
-        tick = setInterval(updateTimer, 250);
-        updateTimer();
-        window.onbeforeunload = (e) => {
-          if (!submitted) {
-            e.preventDefault();
-            e.returnValue = "";
-          }
-        };
-      };
-      $("name").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") $("startBtn").click();
-      });
+const $ = id => document.getElementById(id);
+let paper=[], answers={}, cur=0, name='', startedAt=0, endAt=0, tick=null, submitted=false, payload=null;
 
-      function updateTimer() {
-        const left = Math.max(0, endAt - Date.now());
-        const m = Math.floor(left / 60000),
-          s = Math.floor((left % 60000) / 1000);
-        $("timer").textContent =
-          String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
-        $("timer").classList.toggle("low", left <= 5 * 60000);
-        if (left <= 0 && !submitted) {
-          finish(true);
-        }
-      }
-      function buildGrid() {
-        const g = $("grid");
-        g.innerHTML = "";
-        paper.forEach((q, i) => {
-          const b = el("button", "", i + 1);
-          b.onclick = () => {
-            cur = i;
-            render();
-          };
-          g.appendChild(b);
-        });
-      }
-      function render() {
-        const q = paper[cur];
-        $("qhead").textContent =
-          "Question " + (cur + 1) + " of " + paper.length;
-        $("qtext").textContent = q.q;
-        const o = $("opts");
-        o.innerHTML = "";
-        Object.keys(q.o).forEach((k) => {
-          const l = el("label", "opt" + (answers[cur] === k ? " sel" : ""));
-          const r = document.createElement("input");
-          r.type = "radio";
-          r.name = "opt";
-          r.checked = answers[cur] === k;
-          r.onchange = () => {
-            answers[cur] = k;
-            render();
-          };
-          l.appendChild(r);
-          l.appendChild(el("span", "", k + ") " + q.o[k]));
-          o.appendChild(l);
-        });
-        $("prev").disabled = cur === 0;
-        $("next").disabled = cur === paper.length - 1;
-        [...$("grid").children].forEach((b, i) => {
-          b.className = (i === cur ? "cur " : "") + (answers[i] ? "done" : "");
-        });
-        $("answered").textContent =
-          Object.keys(answers).length + " of " + paper.length + " answered";
-      }
-      $("prev").onclick = () => {
-        if (cur > 0) {
-          cur--;
-          render();
-        }
-      };
-      $("next").onclick = () => {
-        if (cur < paper.length - 1) {
-          cur++;
-          render();
-        }
-      };
-      $("submitBtn").onclick = () => {
-        const un = paper.length - Object.keys(answers).length;
-        const msg = un
-          ? "You have " +
-            un +
-            " unanswered question" +
-            (un > 1 ? "s" : "") +
-            ". Submit anyway?"
-          : "Submit your test now?";
-        if (confirm(msg)) finish(false);
-      };
+function shuffle(a){const r=a.slice();for(let i=r.length-1;i>0;i--){const b=new Uint32Array(1);crypto.getRandomValues(b);const j=b[0]%(i+1);[r[i],r[j]]=[r[j],r[i]];}return r;}
+function show(id){['start','test','result'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo(0,0);}
+function el(t,c,txt){const e=document.createElement(t);if(c)e.className=c;if(txt!==undefined)e.textContent=txt;return e;}
 
-      function finish(auto) {
-        if (submitted) return;
-        submitted = true;
-        clearInterval(tick);
-        window.onbeforeunload = null;
-        const now = Date.now();
-        const detail = paper.map((q, i) => ({
-          no: i + 1,
-          original_no: q.n,
-          question: q.q,
-          options: q.o,
-          selected: answers[i] || null,
-          correct: q.a,
-          is_correct: answers[i] === q.a,
-        }));
-        const score = detail.filter((d) => d.is_correct).length;
-        payload = {
-          candidate_name: name,
-          started_at: new Date(startedAt).toISOString(),
-          submitted_at: new Date(now).toISOString(),
-          time_taken_seconds: Math.min(
-            Math.round((now - startedAt) / 1000),
-            DURATION_MS / 1000,
-          ),
-          score: score,
-          total_questions: paper.length,
-          auto_submitted: !!auto,
-          answers: detail,
-        };
-        showResult(auto);
-        save();
-      }
+$('startBtn').onclick=()=>{
+  name=$('name').value.trim().replace(/\s+/g,' ');
+  if(name.length<2){$('nameErr').textContent='Please enter your name to start.';return;}
+  paper=shuffle(BANK).slice(0,TOTAL_Q);
+  answers={};cur=0;submitted=false;startedAt=Date.now();endAt=startedAt+DURATION_MS;
+  $('topWho').textContent=name;$('barWho').textContent=name;
+  buildGrid();render();show('test');
+  tick=setInterval(updateTimer,250);updateTimer();
+  window.onbeforeunload=e=>{if(!submitted){e.preventDefault();e.returnValue='';}};
+};
+$('name').addEventListener('keydown',e=>{if(e.key==='Enter')$('startBtn').click();});
 
-      function showResult(auto) {
-        $("resWho").textContent =
-          payload.candidate_name +
-          (auto ? " (time up, submitted automatically)" : "");
-        const sc = $("score");
-        sc.textContent = "";
-        sc.append(payload.score, " ");
-        const sm = el("small", "", "/ " + payload.total_questions);
-        sc.appendChild(sm);
-        const t = payload.time_taken_seconds;
-        $("resMeta").textContent =
-          "Time taken: " + Math.floor(t / 60) + " min " + (t % 60) + " sec";
-        const rv = $("review");
-        rv.innerHTML = "";
-        payload.answers.forEach((d) => {
-          const box = el("div", "rq");
-          box.appendChild(
-            el(
-              "div",
-              "meta",
-              "Question " + d.no + " (bank no. " + d.original_no + ")",
-            ),
-          );
-          box.appendChild(el("h3", "", d.question));
-          Object.keys(d.options).forEach((k) => {
-            let c = "ro",
-              tag = "";
-            if (k === d.correct) {
-              c += " right";
-              tag =
-                d.selected === k ? "Your answer, correct" : "Correct answer";
-            } else if (k === d.selected) {
-              c += " wrong";
-              tag = "Your answer, wrong";
-            }
-            const r = el("div", c, k + ") " + d.options[k]);
-            if (tag) r.appendChild(el("span", "tag", tag));
-            box.appendChild(r);
-          });
-          if (!d.selected)
-            box.appendChild(
-              el("div", "skip", "Not answered. Correct answer: " + d.correct),
-            );
-          rv.appendChild(box);
-        });
-        show("result");
-      }
+function updateTimer(){
+  const left=Math.max(0,endAt-Date.now());
+  const m=Math.floor(left/60000),s=Math.floor(left%60000/1000);
+  $('timer').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  $('timer').classList.toggle('low',left<=5*60000);
+  if(left<=0&&!submitted){finish(true);}
+}
+function buildGrid(){
+  const g=$('grid');g.innerHTML='';
+  paper.forEach((q,i)=>{const b=el('button','',i+1);b.onclick=()=>{cur=i;render();};g.appendChild(b);});
+}
+function render(){
+  const q=paper[cur];
+  $('qhead').textContent='Question '+(cur+1)+' of '+paper.length;
+  $('qtext').textContent=q.q;
+  const o=$('opts');o.innerHTML='';
+  Object.keys(q.o).forEach(k=>{
+    const l=el('label','opt'+(answers[cur]===k?' sel':''));
+    const r=document.createElement('input');r.type='radio';r.name='opt';r.checked=answers[cur]===k;
+    r.onchange=()=>{answers[cur]=k;render();};
+    l.appendChild(r);l.appendChild(el('span','',k+') '+q.o[k]));o.appendChild(l);
+  });
+  $('prev').disabled=cur===0;$('next').disabled=cur===paper.length-1;
+  [...$('grid').children].forEach((b,i)=>{b.className=(i===cur?'cur ':'')+(answers[i]?'done':'');});
+  $('answered').textContent=Object.keys(answers).length+' of '+paper.length+' answered';
+}
+$('prev').onclick=()=>{if(cur>0){cur--;render();}};
+$('next').onclick=()=>{if(cur<paper.length-1){cur++;render();}};
+$('submitBtn').onclick=()=>{
+  const un=paper.length-Object.keys(answers).length;
+  const msg=un?('You have '+un+' unanswered question'+(un>1?'s':'')+'. Submit anyway?'):'Submit your test now?';
+  if(confirm(msg))finish(false);
+};
 
-      async function save() {
-        const st = $("saveStatus");
-        st.className = "status";
-        st.textContent = "Saving your result...";
-        $("retrySave").classList.add("hidden");
-        if (
-          SUPABASE_URL.startsWith("PASTE") ||
-          SUPABASE_KEY.startsWith("PASTE")
-        ) {
-          st.className = "status fail";
-          st.textContent =
-            "Result not saved: Supabase URL and key are not set in the page.";
-          return;
-        }
-        try {
-          const r = await fetch(
-            SUPABASE_URL.replace(/\/$/, "") + "/rest/v1/" + TABLE,
-            {
-              method: "POST",
-              headers: Object.assign(
-                {
-                  apikey: SUPABASE_KEY,
-                  "Content-Type": "application/json",
-                  Prefer: "return=minimal",
-                },
-                SUPABASE_KEY.startsWith("eyJ")
-                  ? { Authorization: "Bearer " + SUPABASE_KEY }
-                  : {},
-              ),
-              body: JSON.stringify(payload),
-            },
-          );
-          if (!r.ok) throw new Error(r.status + " " + (await r.text()));
-          st.className = "status ok";
-          st.textContent = "Your result has been saved.";
-        } catch (e) {
-          st.className = "status fail";
-          st.textContent = "Could not save result: " + e.message;
-          $("retrySave").classList.remove("hidden");
-        }
-      }
-      $("retrySave").onclick = save;
+function finish(auto){
+  if(submitted)return;submitted=true;clearInterval(tick);window.onbeforeunload=null;
+  const now=Date.now();
+  const detail=paper.map((q,i)=>({
+    no:i+1,original_no:q.n,question:q.q,options:q.o,
+    selected:answers[i]||null,correct:q.a,is_correct:answers[i]===q.a
+  }));
+  const score=detail.filter(d=>d.is_correct).length;
+  payload={candidate_name:name,started_at:new Date(startedAt).toISOString(),submitted_at:new Date(now).toISOString(),
+    time_taken_seconds:Math.min(Math.round((now-startedAt)/1000),DURATION_MS/1000),score:score,total_questions:paper.length,
+    auto_submitted:!!auto,answers:detail};
+  showResult(auto);save();
+}
 
-      /* PDF */
-      const pdfTxt = (s) =>
-        String(s)
-          .replace(/\u2070/g, "\u00B0")
-          .replace(
-            /[^\x00-\xFF\u2013\u2014\u2018\u2019\u201C\u201D\u2022]/g,
-            "?",
-          );
-      $("pdfBtn").onclick = () => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ unit: "mm", format: "a4" });
-        const W = 210,
-          M = 14,
-          TW = W - 2 * M;
-        let y = 0;
-        const logo = document.querySelector("header.top img").src;
-        function header() {
-          doc.addImage(logo, "PNG", M, 7, 45, (45 * 45) / 370);
-        }
-        header();
-        y = 30;
-        doc.setTextColor(0);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(15);
-        doc.text("Cessna 172R Test Result", M, y);
-        y += 7;
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.text(pdfTxt("Name: " + payload.candidate_name), M, y);
-        y += 5;
-        doc.text(
-          "Score: " + payload.score + " / " + payload.total_questions,
-          M,
-          y,
-        );
-        y += 5;
-        doc.text(
-          "Submitted: " + new Date(payload.submitted_at).toLocaleString(),
-          M,
-          y,
-        );
-        y += 5;
-        doc.text(
-          "Time taken: " +
-            Math.floor(payload.time_taken_seconds / 60) +
-            " min " +
-            (payload.time_taken_seconds % 60) +
-            " sec",
-          M,
-          y,
-        );
-        y += 9;
-        payload.answers.forEach((d) => {
-          const ql = doc.splitTextToSize(pdfTxt(d.no + ") " + d.question), TW);
-          const ols = Object.keys(d.options).map((k) => {
-            let tag = "";
-            if (k === d.correct)
-              tag =
-                d.selected === k
-                  ? "  [Your answer - correct]"
-                  : "  [Correct answer]";
-            else if (k === d.selected) tag = "  [Your answer - wrong]";
-            return {
-              k,
-              lines: doc.splitTextToSize(
-                pdfTxt(k + ") " + d.options[k] + tag),
-                TW - 8,
-              ),
-            };
-          });
-          let h =
-            ql.length * 5 +
-            2 +
-            ols.reduce((a, o) => a + o.lines.length * 4.6, 0) +
-            (d.selected ? 0 : 5) +
-            5;
-          if (y + h > 285) {
-            doc.addPage();
-            y = 16;
-          }
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(10.5);
-          doc.setTextColor(0);
-          doc.text(ql, M, y);
-          y += ql.length * 5 + 2;
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(10);
-          ols.forEach((o) => {
-            if (o.k === d.correct) {
-              doc.setTextColor(20, 140, 70);
-              doc.setFont("helvetica", "bold");
-            } else if (o.k === d.selected) {
-              doc.setTextColor(200, 40, 40);
-              doc.setFont("helvetica", "bold");
-            } else {
-              doc.setTextColor(40);
-              doc.setFont("helvetica", "normal");
-            }
-            doc.text(o.lines, M + 6, y);
-            y += o.lines.length * 4.6;
-          });
-          if (!d.selected) {
-            doc.setTextColor(110);
-            doc.setFont("helvetica", "italic");
-            doc.text(
-              "Not answered. Correct answer: " + d.correct,
-              M + 6,
-              y + 1,
-            );
-            y += 5;
-          }
-          y += 5;
-        });
-        doc.save(
-          "AboveFL360_Cessna172R_" +
-            payload.candidate_name.replace(/[^A-Za-z0-9]+/g, "_") +
-            ".pdf",
-        );
-      };
-    </script>
-  </body>
+function showResult(auto){
+  $('resWho').textContent=payload.candidate_name+(auto?' (time up, submitted automatically)':'');
+  const sc=$('score');sc.textContent='';sc.append(payload.score,' ');const sm=el('small','','/ '+payload.total_questions);sc.appendChild(sm);
+  const t=payload.time_taken_seconds;$('resMeta').textContent='Time taken: '+Math.floor(t/60)+' min '+(t%60)+' sec';
+  const rv=$('review');rv.innerHTML='';
+  payload.answers.forEach(d=>{
+    const box=el('div','rq');
+    box.appendChild(el('div','meta','Question '+d.no+' (bank no. '+d.original_no+')'));
+    box.appendChild(el('h3','',d.question));
+    Object.keys(d.options).forEach(k=>{
+      let c='ro',tag='';
+      if(k===d.correct){c+=' right';tag=d.selected===k?'Your answer, correct':'Correct answer';}
+      else if(k===d.selected){c+=' wrong';tag='Your answer, wrong';}
+      const r=el('div',c,k+') '+d.options[k]);if(tag)r.appendChild(el('span','tag',tag));box.appendChild(r);
+    });
+    if(!d.selected)box.appendChild(el('div','skip','Not answered. Correct answer: '+d.correct));
+    rv.appendChild(box);
+  });
+  show('result');
+}
+
+async function save(){
+  const st=$('saveStatus');st.className='status';st.textContent='Saving your result...';
+  $('retrySave').classList.add('hidden');
+  if(SUPABASE_URL.startsWith('PASTE')||SUPABASE_KEY.startsWith('PASTE')){
+    st.className='status fail';st.textContent='Result not saved: Supabase URL and key are not set in the page.';return;}
+  try{
+    const r=await fetch(SUPABASE_URL.replace(/\/$/,'')+'/rest/v1/'+TABLE,{method:'POST',
+      headers:Object.assign({'apikey':SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},SUPABASE_KEY.startsWith('eyJ')?{'Authorization':'Bearer '+SUPABASE_KEY}:{}),
+      body:JSON.stringify(payload)});
+    if(!r.ok)throw new Error(r.status+' '+(await r.text()));
+    st.className='status ok';st.textContent='Your result has been saved.';
+  }catch(e){
+    st.className='status fail';st.textContent='Could not save result: '+e.message;$('retrySave').classList.remove('hidden');
+  }
+}
+$('retrySave').onclick=save;
+
+/* PDF */
+const pdfTxt=s=>String(s).replace(/\u2070/g,'\u00B0').replace(/[^\x00-\xFF\u2013\u2014\u2018\u2019\u201C\u201D\u2022]/g,'?');
+$('pdfBtn').onclick=()=>{
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,M=14,TW=W-2*M;let y=0;
+  const logo=document.querySelector('header.top img').src;
+  function header(){doc.addImage(logo,'PNG',M,7,45,45*45/370);}
+  header();y=30;
+  doc.setTextColor(0);doc.setFont('helvetica','bold');doc.setFontSize(15);doc.text('Cessna 172R Test Result',M,y);y+=7;
+  doc.setFont('helvetica','normal');doc.setFontSize(10);
+  doc.text(pdfTxt('Name: '+payload.candidate_name),M,y);y+=5;
+  doc.text('Score: '+payload.score+' / '+payload.total_questions,M,y);y+=5;
+  doc.text('Submitted: '+new Date(payload.submitted_at).toLocaleString(),M,y);y+=5;
+  doc.text('Time taken: '+Math.floor(payload.time_taken_seconds/60)+' min '+(payload.time_taken_seconds%60)+' sec',M,y);y+=9;
+  payload.answers.forEach(d=>{
+    const ql=doc.splitTextToSize(pdfTxt(d.no+') '+d.question),TW);
+    const ols=Object.keys(d.options).map(k=>{
+      let tag='';if(k===d.correct)tag=d.selected===k?'  [Your answer - correct]':'  [Correct answer]';else if(k===d.selected)tag='  [Your answer - wrong]';
+      return {k,lines:doc.splitTextToSize(pdfTxt(k+') '+d.options[k]+tag),TW-8)};
+    });
+    let h=ql.length*5+2+ols.reduce((a,o)=>a+o.lines.length*4.6,0)+(d.selected?0:5)+5;
+    if(y+h>285){doc.addPage();y=16;}
+    doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.setTextColor(0);doc.text(ql,M,y);y+=ql.length*5+2;
+    doc.setFont('helvetica','normal');doc.setFontSize(10);
+    ols.forEach(o=>{
+      if(o.k===d.correct){doc.setTextColor(20,140,70);doc.setFont('helvetica','bold');}
+      else if(o.k===d.selected){doc.setTextColor(200,40,40);doc.setFont('helvetica','bold');}
+      else{doc.setTextColor(40);doc.setFont('helvetica','normal');}
+      doc.text(o.lines,M+6,y);y+=o.lines.length*4.6;
+    });
+    if(!d.selected){doc.setTextColor(110);doc.setFont('helvetica','italic');doc.text('Not answered. Correct answer: '+d.correct,M+6,y+1);y+=5;}
+    y+=5;
+  });
+  doc.save('AboveFL360_Cessna172R_'+payload.candidate_name.replace(/[^A-Za-z0-9]+/g,'_')+'.pdf');
+};
+</script>
+</body>
 </html>
